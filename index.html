@@ -3,120 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Validation Tester</title>
+    <title>API Validation Terminal</title>
     <style>
+        /* Black & White Theme */
         :root {
-            --primary: #2563eb;
-            --background: #f8fafc;
-            --surface: #ffffff;
-            --text: #0f172a;
-            --border: #e2e8f0;
+            --bg-color: #0a0a0a;
+            --surface: #171717;
+            --text-main: #f5f5f5;
+            --text-muted: #a3a3a3;
+            --border: #333333;
+            --accent: #ffffff;
+            --success: #4ade80;
+            --error: #f87171;
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--background);
-            color: var(--text);
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 1rem;
+            padding: 2rem;
         }
-        .card {
+
+        .terminal-card {
             background: var(--surface);
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            width: 100%;
-            max-width: 450px;
-        }
-        h2 { margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem; }
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
-        input {
-            width: 100%; padding: 0.75rem;
+            padding: 3rem;
+            border-radius: 8px;
             border: 1px solid var(--border);
-            border-radius: 6px; box-sizing: border-box;
-            font-size: 1rem; transition: border-color 0.15s ease-in-out;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        .header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        h2 { margin: 0; font-size: 1.25rem; font-weight: 500; letter-spacing: -0.025em; }
+        p.subtitle { margin: 0.5rem 0 0 0; color: var(--text-muted); font-size: 0.875rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        
+        label { 
+            display: block; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: var(--text-muted); 
+            margin-bottom: 0.5rem; 
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 4px;
+            font-family: 'Fira Code', ui-monospace, monospace;
+            font-size: 0.875rem;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        input:focus { 
+            outline: none; 
+            border-color: var(--accent); 
+            box-shadow: 0 0 0 1px var(--accent); 
+        }
+
         button {
-            width: 100%; padding: 0.875rem;
-            background-color: var(--primary); color: white;
-            border: none; border-radius: 6px;
-            font-size: 1rem; font-weight: 600; cursor: pointer;
-            transition: background-color 0.15s ease-in-out;
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--accent);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
         }
-        button:hover { background-color: #1d4ed8; }
-        button:disabled { background-color: #93c5fd; cursor: not-allowed; }
-        .result-container {
-            margin-top: 1.5rem; padding: 1rem;
-            background: #1e293b; color: #38bdf8;
-            border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 0.875rem; white-space: pre-wrap; word-break: break-all;
-            display: none; min-height: 60px;
+
+        button:hover { opacity: 0.9; }
+        button:active { transform: translateY(1px); }
+        button:disabled { background-color: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        /* Loader Animation */
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--bg-color);
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Custom JSON Output Styling */
+        .output-wrapper {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        pre {
+            background: var(--bg-color);
+            padding: 1.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin: 0;
+            font-family: 'Fira Code', ui-monospace, monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Syntax Highlighting Colors */
+        .string { color: #d4d4d4; }
+        .number { color: #fff; font-weight: bold; }
+        .boolean { color: #fff; font-weight: bold; }
+        .null { color: #a3a3a3; font-style: italic; }
+        .key { color: #fff; font-weight: 600; }
+
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>API Validation Tester</h2>
-    <form id="validationForm">
+<div class="terminal-card">
+    <div class="header">
+        <h2>Validation Console</h2>
+        <p class="subtitle">API Endpoint Verification Task</p>
+    </div>
+
+    <form id="testerForm">
         <div class="form-group">
-            <label for="email">Email Address</label>
+            <label>Developer Email</label>
             <input type="email" id="email" value="wezontsokota02@gmail.com" required>
         </div>
+        
         <div class="form-group">
-            <label for="apiUrl">API Endpoint URL</label>
+            <label>Deployed API Target</label>
             <input type="url" id="apiUrl" value="https://wezo-ntsokota-developer-task.onrender.com/process-word" required>
         </div>
-        <button type="submit" id="submitBtn">Run Validation</button>
+        
+        <button type="submit" id="submitBtn">
+            <span class="spinner" id="spinner"></span>
+            <span id="btnText">Execute Validation</span>
+        </button>
     </form>
-    
-    <div id="resultBox" class="result-container"></div>
+
+    <div class="output-wrapper" id="outputWrapper">
+        <div class="output-header">
+            <span><span class="status-dot" id="statusDot"></span>Response Data</span>
+            <span id="statusCode"></span>
+        </div>
+        <pre id="resultBox"></pre>
+    </div>
 </div>
 
 <script>
-    document.getElementById('validationForm').addEventListener('submit', async (e) => {
+    
+    function syntaxHighlight(json) {
+        if (typeof json != 'string') {
+             json = JSON.stringify(json, undefined, 2);
+        }
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            let cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+
+    document.getElementById('testerForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const email = document.getElementById('email').value;
         const apiUrl = document.getElementById('apiUrl').value;
-        const resultBox = document.getElementById('resultBox');
         const submitBtn = document.getElementById('submitBtn');
-        
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const outputWrapper = document.getElementById('outputWrapper');
+        const resultBox = document.getElementById('resultBox');
+        const statusDot = document.getElementById('statusDot');
+        const statusCode = document.getElementById('statusCode');
         
         const testUrl = `https://yhxzjyykdsfkdrmdxgho.supabase.co/functions/v1/application-task?url=${encodeURIComponent(apiUrl)}&email=${encodeURIComponent(email)}`;
 
         
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Validating...';
-        resultBox.style.display = 'block';
-        resultBox.style.color = '#94a3b8';
-        resultBox.textContent = 'Awaiting response from Supabase...';
+        btnText.textContent = 'Awaiting Supabase...';
+        spinner.style.display = 'block';
+        outputWrapper.style.display = 'none';
 
         try {
             const response = await fetch(testUrl);
             const text = await response.text();
             
             
-            resultBox.style.color = response.ok ? '#4ade80' : '#f87171';
+            statusDot.style.backgroundColor = response.ok ? 'var(--success)' : 'var(--error)';
+            statusCode.textContent = `STATUS: ${response.status}`;
             
             
             try {
-                resultBox.textContent = JSON.stringify(JSON.parse(text), null, 2);
+                const jsonObj = JSON.parse(text);
+                resultBox.innerHTML = syntaxHighlight(jsonObj);
             } catch {
-                resultBox.textContent = text;
+                resultBox.textContent = text; // Fallback for raw text
             }
-        } catch (error) {
-            resultBox.style.color = '#f87171';
-            resultBox.textContent = `Network Error: Could not connect to the validation endpoint.\n\nDetails: ${error.message}`;
+            
+            outputWrapper.style.display = 'block';
+
+        } catch (err) {
+            statusDot.style.backgroundColor = 'var(--error)';
+            statusCode.textContent = 'ERR_CONNECTION';
+            resultBox.textContent = `Fetch Error: ${err.message}`;
+            outputWrapper.style.display = 'block';
         } finally {
             
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Run Validation';
+            btnText.textContent = 'Execute Validation';
+            spinner.style.display = 'none';
         }
     });
 </script>
